@@ -7,7 +7,10 @@ import os
 import base64
 import json
 import requests
-from urllib.parse import urlparse
+import requests
+from payloads import PAYLOADS
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin, urlparse, parse_qs
 
 from dotenv import load_dotenv
 
@@ -68,25 +71,122 @@ response = client.models.generate_content(
 print(response.text)
 
 #like and sub
-from crawler import find_inputs
-from tester import test_endpoint # type: ignore
-from detector import detect_issues
-from report import generate_report # type: ignore
 
-TARGET = input("enter localhost url")
+#me and epstein are working on this together, we are testing the endpoints for vulnerabilities using the payloads we have defined in the payloads.py file. We will be using the requests library to send requests to the endpoints and check for any vulnerabilities. We will be looking for things like SQL injection, XSS, and other common vulnerabilities. We will also be checking the response status codes and the response body for any signs of vulnerabilities.
 
-def run():
-    print("checking the following: :", TARGET)
-    endpoints = find_inputs(TARGET)
-    all_results = []
-    for ep in endpoints:
-        print("Testing endpoint:", ep["url"])
-        results = test_endpoint(ep)
-        all_results.extend(results)
-    issues = detect_issues(all_results)
-    generate_report(issues)
+#^ wtf did ai generate dawg i am NEVER using the autocomplete feature again lol
+
+def find_inputs(base_url):
+    endpoints = []
+    r = requests.get(base_url)
+    soup = BeautifulSoup(r.text, "html.parser")
+
+    # find forms or smth idk
+    for form in soup.find_all("form"):
+        action = form.get("action")
+        method = form.get("method", "get").lower()
+
+        inputs = []
+        for inp in form.find_all("input"):
+            name = inp.get("name")
+            if name:
+                inputs.append(name)
+        endpoints.append({
+            "url": urljoin(base_url, action),
+            "method": method,
+            "inputs": inputs
+        })
+
+    #brotato
+    parsed = urlparse(base_url)
+    params = parse_qs(parsed.query)
+
+    if params:
+        endpoints.append({
+            "url": base_url,
+            "method": "get",
+            "inputs": list(params.keys())
+        })
+    return endpoints
+
+def test_endpoint(endpoint):
+    findings = []
+    for param in endpoint["inputs"]:
+        for payload in PAYLOADS:
+            data = {param: payload}
+
+            try:
+                if endpoint["method"] == "post":
+                    r = requests.post(endpoint["url"], data=data)
+                else:
+                    r = requests.get(endpoint["url"], params=data)
+                findings.append({
+                    "param": param,
+                    "payload": payload,
+                    "status": r.status_code,
+                    "response": r.text[:500]
+                })
+            except Exception as e:
+                findings.append({
+                    "param": param,
+                    "payload": payload,
+                    "error": str(e)
+                })
+    return findings
+
+SQL_ERRORS = [
+    "sql syntax",
+    "mysql",
+    "sqlite",
+    "postgres",
+    "unterminated",
+    "odbc",
+    "database error",
+    "query failed"
+]
+
+def detect_issues(test_results):
+    issues = []
+    for result in test_results:
+        if "response" in result:
+            text = result["response"].lower()
+            #daisy daisy give me your answer do
+            #does this look like a SQL error to you?
+            #if it does, im a lolicon too
+            #damn is 
+            #ENRIQUEEE
+
+            for err in SQL_ERRORS:
+                if err in text:
+                    issues.append({
+                        "param": result["param"],
+                        "payload": result["payload"],
+                        "issue": "Possible SQL injection",
+                        "indicator": err
+                    })
+
+    return issues
+
+def generate_report(issues):
+    print("\nreport\n")
+    if not issues:
+        print("No obvious SQLi indicators detected.")
+        return
+    for i, issue in enumerate(issues, 1):
+        print(f"{i}. Parameter: {issue['param']}")
+        print(f"   Payload: {issue['payload']}")
+        print(f"   Indicator: {issue['indicator']}")
+        print("")
+
+TARGET = ("http://localhost:8501/")
 
 
-if __name__ == "__main__":
-    run()
-
+print("checking the following: :", TARGET)
+endpoints = find_inputs(TARGET)
+all_results = []
+for ep in endpoints:
+    print("Testing endpoint:", ep["url"])
+    results = test_endpoint(ep)
+    all_results.extend(results)
+issues = detect_issues(all_results)
+generate_report(issues)
