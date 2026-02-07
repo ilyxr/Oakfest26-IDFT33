@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,51 +8,38 @@
 <body style="margin:0; background:black; overflow:hidden; font-family:Arial, sans-serif;">
 
   <div style="position:fixed; inset:0;">
-    <img src="\TRILUNA_ASSETS\base0.jpg" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; animation:fade1 0.5s 0.5s forwards;" />
-
-    <img src="\TRILUNA_ASSETS\base1.jpg" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; animation:fade2 0.7s 1.0s forwards;" />
-
-    <img src="\TRILUNA_ASSETS\base3.png" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; animation:fade3 0.7s 1.7s forwards;" />
-    
-    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); opacity:0; animation:fade2 0.5s 2.2s forwards;"></div>
+    <img src="C:\Users\Ashmit\Desktop\codefest 26\TRILUNA_ASSETS\base0.jpg" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; animation:fade1 0.2s 0.2s forwards;" />
   </div>
 
+  <div id="shooting-stars-container" style="position:fixed; inset:0; z-index:1; pointer-events:none;"></div>
+
   <div style="position:relative; z-index:2; height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:16px;">
-    <h1 style="color:white; font-size:48px; font-family: 'Azeret Mono', monospace; margin:0; opacity:0; padding:25px;animation:fadeIn 0.5s 2.4s forwards;">T ‎ ‎ R ‎ ‎ I ‎ ‎ L ‎ ‎ U ‎ ‎ N ‎ ‎ A</h1>
+    <h1 id="triluna" style="color:white; font-size:38px; margin:0; letter-spacing:20px; opacity:0; animation:fadeIn 0.5s 0.6s forwards;">
+      <span class="triluna-letter">T</span>
+      <span class="triluna-letter">R</span>
+      <span class="triluna-letter">I</span>
+      <span class="triluna-letter">L</span>
+      <span class="triluna-letter">U</span>
+      <span class="triluna-letter">N</span>
+      <span class="triluna-letter">A</span>
+    </h1>
     <input
       type="text"
-      id="input"
       placeholder="Input git repo file URL..."
       style="
-        background: transparent;
-        border: none;
-        outline: none;
-        color: rgba(255, 255, 255, 0.7);
-        font-family: 'Azeret Mono', monospace;
-        font-size: 16px;
         text-align: center;
-        letter-spacing: 1px;
-        width: 300px;
-        padding: 15px 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-        transition: border-color 0.3s ease;
+        padding:12px 16px;
+        width:260px;
+        background:transparent;
+        border:transparent;
+        color:white;
+        font-size:16px;
+        outline:none;
         backdrop-filter:blur(6px);
         opacity:0;
-        animation:fadeIn 0.5s 3.0s forwards;
+        animation:fadeIn 0.5s 2.6s forwards;
       "
     />
-    <p id="output"></p>
-    <script> 
-      const inputElement = document.getElementById('input');
-      const outputElement = document.getElementById('output');
-
-      // Add an event listener for seeing if enter was pressed 
-      inputElement.addEventListener('keydown', function(event) {
-          // Check if the pressed key is enter and nothing else 
-          if (event.key === 'Enter') {
-            // IMPLEMENT THE BACKEND HERE
-          }
-    </script>
   </div>
 
   <style>
@@ -81,7 +67,124 @@
       from { opacity:0; }
       to { opacity:1; }
     }
+
+    
+    
+
+    .shooting-star {
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .triluna-letter {
+      display: inline-block;
+      position: relative;
+    }
+
+    @keyframes glitch {
+      0%, 100% {
+        text-shadow: 
+          2px 0 #ff00de,
+          -2px 0 #00ffff,
+          0 0 10px rgba(0, 255, 255, 0.5);
+        transform: translateX(2px);
+      }
+      20% {
+        text-shadow: 
+          -2px 0 #ff00de,
+          2px 0 #00ffff,
+          0 0 10px rgba(255, 0, 222, 0.5);
+        transform: translateX(-2px);
+      }
+      40% {
+        text-shadow: 
+          2px 2px #ff00de,
+          -2px -2px #00ffff,
+          0 0 10px rgba(0, 255, 255, 0.5);
+        transform: translateX(1px) translateY(2px);
+      }
+      60% {
+        text-shadow: 
+          -2px -2px #ff00de,
+          2px 2px #00ffff,
+          0 0 10px rgba(255, 0, 222, 0.5);
+        transform: translateX(-1px) translateY(-2px);
+      }
+      80% {
+        text-shadow: 
+          2px -2px #ff00de,
+          -2px 2px #00ffff,
+          0 0 10px rgba(0, 255, 255, 0.5);
+        transform: translateX(0px);
+      }
+    }
   </style>
+
+  <script>
+    (function(){
+      const letters = document.querySelectorAll('.triluna-letter');
+      function scheduleGlitch(letter){
+        const delay = Math.random() * 19000 + 1000;
+        setTimeout(function(){
+          const original = letter.textContent;
+          const duration = Math.random() * 150 + 150;
+          const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+          const intervalMs = 20;
+          const iv = setInterval(function(){
+            const rand = chars.charAt(Math.floor(Math.random() * chars.length));
+            letter.textContent = rand;
+          }, intervalMs);
+          setTimeout(function(){
+            clearInterval(iv);
+            letter.textContent = original;
+            setTimeout(function(){ scheduleGlitch(letter); }, 50);
+          }, duration);
+        }, delay);
+      }
+      function initializeGlitch(){ letters.forEach(function(letter){ scheduleGlitch(letter); }); }
+      setTimeout(initializeGlitch,2000);
+      function createShootingStar(){
+        const container = document.getElementById('shooting-stars-container');
+        const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+        svg.setAttribute('width', window.innerWidth);
+        svg.setAttribute('height', window.innerHeight);
+        svg.setAttribute('style', 'position:absolute; top:0; left:0;');
+        svg.classList.add('shooting-star');
+        const startX = Math.random() * window.innerWidth;
+        const startY = Math.random() * (window.innerHeight / 2);
+        const angle = 45;
+        const length = Math.random() * 100 + 80;
+        const endX = startX + length * Math.cos((angle * Math.PI) / 180);
+        const endY = startY + length * Math.sin((angle * Math.PI) / 180);
+        const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1', startX);
+        line.setAttribute('y1', startY);
+        line.setAttribute('x2', endX);
+        line.setAttribute('y2', endY);
+        line.setAttribute('stroke', 'rgba(173, 194, 255, 0.8)');
+        line.setAttribute('stroke-width', '2');
+        line.setAttribute('stroke-linecap', 'round');
+        line.setAttribute('filter', 'drop-shadow(0 0 3px rgba(173, 194, 255, 0.6))');
+        svg.appendChild(line);
+        container.appendChild(svg);
+        const duration = 500;
+        const speedMultiplier = 1.5;
+        const finalX = (endX - startX) * speedMultiplier;
+        const finalY = (endY - startY) * speedMultiplier;
+        svg.style.willChange = 'transform, opacity';
+        svg.style.transition = 'transform ' + duration + 'ms cubic-bezier(0.22,0.9,0.35,1), opacity ' + duration + 'ms linear';
+        requestAnimationFrame(function(){
+          svg.style.transform = 'translate(' + finalX + 'px, ' + finalY + 'px)';
+          svg.style.opacity = '0';
+        });
+        setTimeout(function(){ svg.remove(); }, duration + 50);
+      }
+      function spawnShootingStars(){
+        setInterval(function(){ if (Math.random() > 0.3) { createShootingStar(); } }, 200);
+      }
+      spawnShootingStars();
+    })();
+  </script>
 
 </body>
 </html>
