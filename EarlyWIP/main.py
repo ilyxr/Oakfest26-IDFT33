@@ -208,7 +208,7 @@ print("checking the following: :", TARGET)
 endpoints = find_inputs(TARGET)
 all_results = []
 for ep in endpoints:
-    print("Testing endpoint:", ep["url"])
+    print("testing endpoint: ", ep["url"])
     results = test_endpoint(ep)
     all_results.extend(results)
 issues = detect_issues(all_results)
@@ -299,12 +299,12 @@ def scan_stored_xss(base_url, payloads):
 def submit_results(submission_url, results):
     print("\n Submit results to server ###")
     if not results:
-        print("No vulnerabilities to submit.")
+        print("No vulnerabilities to submit. idk")
         return
     try:
         response = requests.post(submission_url, json={'results': results}, timeout=5)
         if response.status_code == 200:
-            print(f"Results successfully submitted to {submission_url}")
+            print(f"Resu888888888lts successfully submitted to {submission_url}")
         else:
             print(f"failed to submit. server responded with status code: {response.status_code}")
     except requests.exceptions.RequestException as e:
@@ -383,3 +383,4 @@ hi_lol=my_code_file_i_love_hu_tao
 status, issues = scan_content(hi_lol)
 print(status)
 #can use issues but not rn
+
