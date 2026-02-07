@@ -1,19 +1,31 @@
 import streamlit as st
 import pandas as pd 
+import streamlit.components.v1 as components
 
-st.title("name of the project (i forgor)")
+st.markdown("""
+<style>
+.stTextInput input[aria-label="Transparent input"] {
+    background-color: transparent;
+    border: none;
+    color: inherit;
+}
+</style>
+""", unsafe_allow_html=True)
+st.write(" ") 
+st.write(" ") 
+st.write(" ") 
+st.write(" ") 
+st.write(" ") 
 
+st.markdown("<h1 style='text-align: center; color: white; font-family:monospace; padding: 160px'>t r i l u n a</h1>", unsafe_allow_html=True)
 def page1(): 
-    st.write("Please enter your Github File's link")
-    github_link = st.text_input("Github File Link: ", key="github_link") 
-    if st.button("Submit", key="submit_button"):
-        st.write("You entered: ", github_link)
-        # the function would be called right HERE 
-        # st.spinner() 
-        # st.success("Analysis complete!") 
-        # st.button("Go to Results", key="go_to_results_button")
-        # if st.button("Go to Results", key="go_to_results_button"):
-        #   st.switch_page("Page2")
+    github_link = st.text_input(
+        " ",
+        placeholder = "enter a github link",
+        label_visibility = 'collapsed',
+        key="placeholder",
+    )
+        
         
 def page2(): 
     st.write("Here are the results of the analysis: ")
