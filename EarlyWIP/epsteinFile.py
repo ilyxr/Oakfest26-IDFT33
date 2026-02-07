@@ -2,50 +2,59 @@ import streamlit as st
 import pandas as pd 
 import streamlit.components.v1 as components
 
-st.markdown("""
+
+bg_url = "https://hitecher.com/storage/img/20190423/583ade3bcb4d91df0177.jpg"  
+css = f"""
 <style>
-.stTextInput input[aria-label="Transparent input"] {
-    background-color: transparent;
-    border: none;
-    color: inherit;
-}
+  .stApp {{
+    background-image: url("{bg_url}");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }}
+  .bg-overlay {{
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: rgba(0,5,75,0.25);
+  }}
+  .main > div {{ position: relative; z-index: 1; }}
 </style>
-""", unsafe_allow_html=True)
+<div class="bg-overlay"></div>
+"""
+st.markdown(css, unsafe_allow_html=True)
+
+# what's padding i genuinely dk
+st.write(" ") 
+st.write(" ") 
+st.write(" ") 
+st.write(" ") 
+st.write(" ") 
+st.write(" ") 
+st.write(" ") 
+st.write(" ") 
+st.write(" ") 
+st.write(" ") 
+st.write(" ") 
 st.write(" ") 
 st.write(" ") 
 st.write(" ") 
 st.write(" ") 
 st.write(" ") 
 
-st.markdown("<h1 style='text-align: center; color: white; font-family:monospace; padding: 160px'>t r i l u n a</h1>", unsafe_allow_html=True)
-def page1(): 
-    github_link = st.text_input(
-        " ",
-        placeholder = "enter a github link",
-        label_visibility = 'collapsed',
-        key="placeholder",
-    )
+
+st.markdown("<h1 style='text-align: center; color: white; font-family:monospace; padding: 67px'>t r i l u n a</h1>", unsafe_allow_html=True)
+
+github_link = st.text_input(
+    " ",
+    placeholder = "enter link here",
+    label_visibility = 'collapsed',
+    key="placeholder",
+)
+if github_link: 
+    with st.spinner("going through your hard work..."):
+        # put the actual backend here 
+        st.switch_page("resultsPage.py")
+            
         
         
-def page2(): 
-    st.write("Here are the results of the analysis: ")
-    col1, col2 = st.columns(2) 
-    
-    with col1: 
-        st.write(
-            pd.DataFrame(
-                {
-                    "Problem": ["problem 1", "problem 2", "problem 3"],
-                    "Description": ["explanation 1", "explanation 2", "explanation 3"],
-                }
-            ))
-        
-    with col2: 
-        st.write("Overall Rating:")
-        st.progress(80, text="4/5")
-    
-pg = st.navigation([
-    st.Page(page1, title="Enter Link"),
-    st.Page(page2, title="Results") 
-], position="hidden")
-pg.run()
+
