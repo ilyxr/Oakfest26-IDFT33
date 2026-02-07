@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Triluna</title>
+  <link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      background-image: url('https://instagram.fblr20-2.fna.fbcdn.net/v/t1.15752-9/624576839_1959843261553319_717761765649431422_n.png?_nc_cat=104&_nc_cb=04374bf5-24e287ff&ccb=7-5&_nc_sid=fc17b8&efg=eyJxZV9ncm91cHMiOlsiaWdkX2Jlc3RfZWZmb3J0X2ltYWdlOnRlc3QiXX0%3D&_nc_ohc=qmWISgwWNh4Q7kNvwFVQ6N_&_nc_oc=AdlNWneZykDImYYMnykQpWpodj_cKyLE0f4G-sJqSWFdLuedungpqw9rxJlPoMIJ6nk&_nc_zt=23&_nc_ht=instagram.fblr20-2.fna&oh=03_Q7cD4gGNjK_fVDEG0Jdx5E70B9K0AM1VsQ3pEYN5uwBab8pRAA&oe=69AEB84E');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Azeret Mono', monospace;
+      overflow: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle at center, rgba(100, 150, 255, 0.2) 0%, rgba(100, 150, 255, 0.05) 40%, transparent 70%);
+      border-radius: 50%;
+      box-shadow: 0 0 100px 40px rgba(100, 150, 255, 0.15), 
+                  inset 0 0 100px 20px rgba(100, 150, 255, 0.1);
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+      transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      will-change: transform;
+    }
+
+    h1 {
+      color: rgba(255, 255, 255, 0.95);
+      font-size: 3.5rem;
+      letter-spacing: 8px;
+      font-weight: 400;
+      text-transform: lowercase;
+    }
+
+    input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: rgba(255, 255, 255, 0.7);
+      font-family: 'Azeret Mono', monospace;
+      font-size: 1rem;
+      text-align: center;
+      letter-spacing: 1px;
+      width: 300px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+      transition: border-color 0.3s ease;
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    input:focus {
+      border-bottom-color: rgba(255, 255, 255, 0.6);
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.5rem;
+        letter-spacing: 6px;
+      }
+      input {
+        width: 250px;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>t r i l u n a</h1>
+    <input 
+      type="text" 
+      id="linkInput" 
+      placeholder="enter github link"
+      loading="lazy"
+    />
+  </div>
+
+  <script>
+    const input = document.getElementById('linkInput');
+    const container = document.querySelector('.container');
+    let mouseX = 0, mouseY = 0;
+    let rafId = null;
+
+    function updateParallax() {
+      const offsetX = (mouseX - window.innerWidth / 2) * 0.02;
+      const offsetY = (mouseY - window.innerHeight / 2) * 0.02;
+      container.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+      rafId = null;
+    }
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      if (!rafId) rafId = requestAnimationFrame(updateParallax);
+    }, { passive: true });
+
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && input.value.trim()) {
+        console.log('Link entered:', input.value);
+      }
+    });
+  </script>
+</body>
+</html>

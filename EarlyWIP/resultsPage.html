@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Results - Triluna</title>
+  <link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 100vw;
+      min-height: 100vh;
+      background: linear-gradient(rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.25)), linear-gradient(135deg, #0a1428 0%, #1a2a4a 50%, #0f1f3a 100%);
+      background-image: url('');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      filter: blur(2px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Azeret Mono', monospace;
+      position: relative;
+      padding: 40px 20px;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle at center, rgba(100, 150, 255, 0.2) 0%, rgba(100, 150, 255, 0.05) 40%, transparent 70%);
+      border-radius: 50%;
+      box-shadow: 0 0 100px 40px rgba(100, 150, 255, 0.15), inset 0 0 100px 20px rgba(100, 150, 255, 0.1);
+      z-index: 0;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      max-width: 900px;
+    }
+
+    h1 {
+      color: rgba(255, 255, 255, 0.95);
+      font-size: 2.5rem;
+      letter-spacing: 4px;
+      font-weight: 400;
+      text-transform: lowercase;
+    }
+
+    .table-wrapper {
+      width: 100%;
+      max-height: 400px;
+      overflow-y: auto;
+      border-radius: 12px;
+      background: rgba(20, 30, 60, 0.6);
+      backdrop-filter: blur(10px);
+    }
+
+    .table-wrapper::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .table-wrapper::-webkit-scrollbar-track {
+      background: rgba(100, 150, 255, 0.05);
+    }
+
+    .table-wrapper::-webkit-scrollbar-thumb {
+      background: rgba(100, 150, 255, 0.3);
+      border-radius: 4px;
+    }
+
+    .table-wrapper::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 150, 255, 0.5);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: transparent;
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      background: rgba(40, 60, 100, 0.8);
+    }
+
+    th {
+      background: rgba(40, 60, 100, 0.8);
+      color: rgba(255, 255, 255, 0.8);
+      padding: 15px;
+      text-align: left;
+      font-weight: 500;
+      border-right: 1px solid rgba(100, 150, 255, 0.2);
+      user-select: none;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    th:hover {
+      background: rgba(50, 80, 130, 0.8);
+    }
+
+    th:last-child {
+      border-right: none;
+    }
+
+    td {
+      padding: 12px 15px;
+      color: rgba(255, 255, 255, 0.7);
+      border-right: 1px solid rgba(100, 150, 255, 0.1);
+    }
+
+    td:last-child {
+      border-right: none;
+    }
+
+    tr:not(:last-child) {
+      border-bottom: 1px solid rgba(100, 150, 255, 0.1);
+    }
+
+    .rating-container {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.95rem;
+      letter-spacing: 2px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      max-width: 500px;
+      height: 6px;
+      background: rgba(100, 150, 255, 0.15);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 15px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, rgba(100, 150, 255, 0.8), rgba(150, 200, 255, 0.9));
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+      th, td {
+        padding: 10px;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>results</h1>
+    <div class="table-wrapper">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th>No. </th>
+            <th>Problem</th>
+            <th>Description</th>
+            <th id="priorityHeader">Priority</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="rating-container">
+      <div>rating | <span id="ratingValue">67</span>/100</div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const data = {
+      rows: [ //PLACE THE DATA HERE PLSPLSPLPS
+        { problem: "Forgot to hide the Gemini API key", description: "Make sure to put your Gemini API key in a secure environment variable instead of hardcoding it.", priority: 5 },
+        { problem: "Insecure password handling", description: "Avoid storing passwords in plain text. Use secure hashing and salting techniques.", priority: 3 },
+        { problem: "Hardcoded sensitive data", description: "Avoid hardcoding sensitive data like API keys, passwords, or secrets in your source code.", priority: 1 }
+      ],
+      rating: 67,
+      backgroundImage: "https://instagram.fblr20-2.fna.fbcdn.net/v/t1.15752-9/624576839_1959843261553319_717761765649431422_n.png?_nc_cat=104&_nc_cb=04374bf5-24e287ff&ccb=7-5&_nc_sid=fc17b8&efg=eyJxZV9ncm91cHMiOlsiaWdkX2Jlc3RfZWZmb3J0X2ltYWdlOnRlc3QiXX0%3D&_nc_ohc=qmWISgwWNh4Q7kNvwFVQ6N_&_nc_oc=AdlNWneZykDImYYMnykQpWpodj_cKyLE0f4G-sJqSWFdLuedungpqw9rxJlPoMIJ6nk&_nc_zt=23&_nc_ht=instagram.fblr20-2.fna&oh=03_Q7cD4gGNjK_fVDEG0Jdx5E70B9K0AM1VsQ3pEYN5uwBab8pRAA&oe=69AEB84E"
+    };
+
+    let sortAscending = false;
+
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = data.rows.map((row, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${row.problem}</td>
+          <td>${row.description}</td>
+          <td>${row.priority}</td>
+        </tr>
+      `).join('');
+    }
+
+    function setRating() {
+      document.getElementById('ratingValue').textContent = data.rating;
+      document.getElementById('progressFill').style.width = data.rating + '%';
+    }
+
+    function setBackground() {
+      if (data.backgroundImage) {
+        document.body.style.backgroundImage = `url('${data.backgroundImage}')`;
+        document.body.style.filter = 'blur(0px)';
+      }
+    }
+
+    document.getElementById('priorityHeader').addEventListener('click', () => {
+      sortAscending ? 
+        data.rows.sort((a, b) => b.priority - a.priority) :
+        data.rows.sort((a, b) => a.priority - b.priority);
+      sortAscending = !sortAscending;
+      renderTable();
+    });
+
+    renderTable();
+    setRating();
+    setBackground();
+  </script>
+</body>
+</html>
