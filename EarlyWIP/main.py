@@ -74,14 +74,17 @@ prompt = "You are an expert cybersecurity analyst tasked with detecting weakness
 api_key1 = os.getenv("GOOGLE_API_KEY")
 
 client = genai.Client(api_key=api_key1)
-'''
+
 response = client.models.generate_content(
     model="gemini-3-flash-preview",
     contents=prompt
 )
 
 print(response.text)
-'''
+
+with open('responses.csv', 'w') as f:
+    f.write(response.text)
+
 #TURN ON AT END
 
 
@@ -99,6 +102,10 @@ print(response.text)
 #me and epstein are working on this together, we are testing the endpoints for vulnerabilities using the payloads we have defined in the payloads.py file. We will be using the requests library to send requests to the endpoints and check for any vulnerabilities. We will be looking for things like SQL injection, XSS, and other common vulnerabilities. We will also be checking the response status codes and the response body for any signs of vulnerabilities.
 
 #^ wtf did ai generate dawg i am NEVER using the autocomplete feature again lol
+
+#creating holder variables
+myothertempvar=0
+tempvar=0
 
 def find_inputs(base_url):
     endpoints = []
@@ -195,6 +202,7 @@ def generate_report(issues):
     print("\nreport\n")
     if not issues:
         print("No obvious SQLi indicators detected.")
+        myothertempvar=1
         return
     for i, issue in enumerate(issues, 1):
         print(f"{i}. Parameter: {issue['param']}")
@@ -208,7 +216,7 @@ print("checking the following: :", TARGET)
 endpoints = find_inputs(TARGET)
 all_results = []
 for ep in endpoints:
-    print("testing endpoint: ", ep["url"])
+    print("Testing endpoint:", ep["url"])
     results = test_endpoint(ep)
     all_results.extend(results)
 issues = detect_issues(all_results)
@@ -299,30 +307,32 @@ def scan_stored_xss(base_url, payloads):
 def submit_results(submission_url, results):
     print("\n Submit results to server ###")
     if not results:
-        print("No vulnerabilities to submit. idk")
+        print("No vulnerabilities to submit.")
         return
     try:
         response = requests.post(submission_url, json={'results': results}, timeout=5)
         if response.status_code == 200:
-            print(f"Resu888888888lts successfully submitted to {submission_url}")
+            print(f"Results successfully submitted to {submission_url}")
         else:
             print(f"failed to submit. server responded with status code: {response.status_code}")
     except requests.exceptions.RequestException as e:
         print(f"[-] Error submitting results: {e}")
 
-if __name__ == '__main__': #why am i using main lol i have NEVER used ts before i could jst delete it and the indentation but it would lowkey be funny if i kept it in
-    payloads_to_test = load_payloads(PAYLOAD_FILE)
-    if payloads_to_test:
-        scan_reflected_xss(TARGET_URL, payloads_to_test)
-        scan_stored_xss(TARGET_URL, payloads_to_test)
-        print("\n scan done!")
-        if vulnerabilities_found:
-            print(f"Found {len(vulnerabilities_found)} potential vulnerabilities.")
-            submit_results(SUBMISSION_URL, vulnerabilities_found)
-        else:
-            print("No vulnerabilities were detected.")
+#why am i using main lol i have NEVER used ts before i could jst delete it and the indentation but it would lowkey be funny if i kept it in
+#killed main
+payloads_to_test = load_payloads(PAYLOAD_FILE)
+if payloads_to_test:
+    scan_reflected_xss(TARGET_URL, payloads_to_test)
+    scan_stored_xss(TARGET_URL, payloads_to_test)
+    print("\n scan done!")
+    if vulnerabilities_found:
+        print(f"Found {len(vulnerabilities_found)} potential vulnerabilities.")
+        submit_results(SUBMISSION_URL, vulnerabilities_found)
     else:
-        print("Could not load payloads.")
+        print("No vulnerabilities were detected.")
+        tempvar=1
+else:
+    print("Could not load payloads.")
 
 
 
@@ -383,4 +393,28 @@ hi_lol=my_code_file_i_love_hu_tao
 status, issues = scan_content(hi_lol)
 print(status)
 #can use issues but not rn
+
+#to create a god array
+#ahhahahahhahahhahahahhahahahahahha
+
+god_array=[0, 0, 0]
+#1 is Crypto, 2 is XSS, 3 is SQL. Handle Gemeni seperately. 1 is compromised, 0 is safe.
+if status=="FAIL":
+    god_array[0]=1
+else:
+    god_array[0]=0
+
+if tempvar!=1:
+    god_array[1]=1
+else:
+    god_array[1]=0
+
+if myothertempvar!=1:
+    god_array[2]=1
+else:
+    god_array[2]=0
+
+print(f"\n{god_array}\n")
+#can use issues but not rn
+
 
