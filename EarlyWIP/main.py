@@ -7,16 +7,16 @@ import os
 import base64
 import json
 import requests
-import requests
+import time
+import urllib
 from payloads import PAYLOADS
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse, parse_qs
-
 from dotenv import load_dotenv
 
 load_dotenv()
 ###edge
-
+'''
 hubstring = str(input("Paste a valid Github URL: "))
 
 def github_read_file(username, repository_name, file_path, github_token=None):
@@ -69,7 +69,7 @@ response = client.models.generate_content(
 )
 
 print(response.text)
-
+'''
 #like and sub
 
 #me and epstein are working on this together, we are testing the endpoints for vulnerabilities using the payloads we have defined in the payloads.py file. We will be using the requests library to send requests to the endpoints and check for any vulnerabilities. We will be looking for things like SQL injection, XSS, and other common vulnerabilities. We will also be checking the response status codes and the response body for any signs of vulnerabilities.
@@ -190,3 +190,103 @@ for ep in endpoints:
     all_results.extend(results)
 issues = detect_issues(all_results)
 generate_report(issues)
+
+TARGET_URL = "http://localhost:8501"
+PAYLOAD_FILE = "xss_payloads.txt"
+SUBMISSION_URL = TARGET_URL + "/resultsPage"
+
+vulnerabilities_found = []
+
+def load_payloads(filepath):
+    try:
+        with open(filepath, 'r') as f:
+            payloads = [line.strip() for line in f if line.strip() and not line.strip().startswith('#')]
+        return payloads
+    except FileNotFoundError:
+        print(f"fuck: '{filepath}' not found.")
+        return []
+
+def scan_reflected_xss(base_url, payloads):
+    global vulnerabilities_found
+    print("\n scan for reflected xss or something")
+    endpoint = f"{base_url}/reflected"
+    param = "search"
+    
+    for payload in payloads:
+        encoded_payload = urllib.parse.quote_plus(payload)
+        full_url = f"{endpoint}?{param}={encoded_payload}"
+        try:
+            response = requests.get(full_url, timeout=5)
+            if payload in response.text:
+                finding = {
+                    "type": "Reflected XSS",
+                    "endpoint": endpoint,
+                    "payload": payload,
+                    "proof_url": full_url
+                }
+                vulnerabilities_found.append(finding)
+                print(f"[+] VULNERABLE (Reflected): {endpoint}")
+                print(f"    - Payload: {payload}")
+                print("-" * 20)
+
+        except requests.exceptions.RequestException as e:
+            print(f"problem connecting to {full_url}: {e}")
+            break
+
+def scan_stored_xss(base_url, payloads):
+    global vulnerabilities_found
+    print("\n test stored xss")
+    endpoint = f"{base_url}/stored"
+    try:
+        requests.post(endpoint, data={'comment': 'initial_clean_comment'})
+        time.sleep(0.5)
+    except requests.exceptions.RequestException:
+        print("baseline for xss test failed.")
+        return
+    for payload in payloads:
+        try:
+            post_response = requests.post(endpoint, data={'comment': payload}, timeout=5)
+            if post_response.status_code == 200:
+                get_response = requests.get(endpoint, timeout=5)
+                if payload in get_response.text:
+                    finding = {
+                        "type": "Stored XSS",
+                        "endpoint": endpoint,
+                        "payload": payload,
+                        "proof_url": endpoint
+                    }
+                    vulnerabilities_found.append(finding)
+                    print(f"++++++ goon VULNERABLE (Stored): {endpoint}")
+                    print(f"    -> Payload: {payload}")
+                    print("-" * 20)
+        except requests.exceptions.RequestException as e:
+            print(f"error during stored XSS test for payload '{payload}': {e}")
+            break
+
+def submit_results(submission_url, results):
+    print("\n Submit results to server ###")
+    if not results:
+        print("No vulnerabilities to submit.")
+        return
+    try:
+        response = requests.post(submission_url, json={'results': results}, timeout=5)
+        if response.status_code == 200:
+            print(f"Results successfully submitted to {submission_url}")
+        else:
+            print(f"failed to submit. server responded with status code: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"[-] Error submitting results: {e}")
+
+if __name__ == '__main__':
+    payloads_to_test = load_payloads(PAYLOAD_FILE)
+    if payloads_to_test:
+        scan_reflected_xss(TARGET_URL, payloads_to_test)
+        scan_stored_xss(TARGET_URL, payloads_to_test)
+        print("\n scan done!")
+        if vulnerabilities_found:
+            print(f"Found {len(vulnerabilities_found)} potential vulnerabilities.")
+            submit_results(SUBMISSION_URL, vulnerabilities_found)
+        else:
+            print("No vulnerabilities were detected.")
+    else:
+        print("Could not load payloads.")
