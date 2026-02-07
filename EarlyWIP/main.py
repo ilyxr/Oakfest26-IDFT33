@@ -13,10 +13,22 @@ from payloads import PAYLOADS
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse, parse_qs
 from dotenv import load_dotenv
+import math
+import re
+import sys 
 
 load_dotenv()
 ###edge
-'''
+
+
+
+
+
+#TESTING GEMINI
+
+
+
+
 hubstring = str(input("Paste a valid Github URL: "))
 
 def github_read_file(username, repository_name, file_path, github_token=None):
@@ -62,7 +74,7 @@ prompt = "You are an expert cybersecurity analyst tasked with detecting weakness
 api_key1 = os.getenv("GOOGLE_API_KEY")
 
 client = genai.Client(api_key=api_key1)
-
+'''
 response = client.models.generate_content(
     model="gemini-3-flash-preview",
     contents=prompt
@@ -70,6 +82,18 @@ response = client.models.generate_content(
 
 print(response.text)
 '''
+#TURN ON AT END
+
+
+
+
+
+#TESTING SQLI
+
+
+
+
+
 #like and sub
 
 #me and epstein are working on this together, we are testing the endpoints for vulnerabilities using the payloads we have defined in the payloads.py file. We will be using the requests library to send requests to the endpoints and check for any vulnerabilities. We will be looking for things like SQL injection, XSS, and other common vulnerabilities. We will also be checking the response status codes and the response body for any signs of vulnerabilities.
@@ -180,7 +204,6 @@ def generate_report(issues):
 
 TARGET = ("http://localhost:8501/")
 
-
 print("checking the following: :", TARGET)
 endpoints = find_inputs(TARGET)
 all_results = []
@@ -190,6 +213,16 @@ for ep in endpoints:
     all_results.extend(results)
 issues = detect_issues(all_results)
 generate_report(issues)
+
+
+
+
+
+#TESTING XSS
+
+
+
+
 
 TARGET_URL = "http://localhost:8501"
 PAYLOAD_FILE = "xss_payloads.txt"
@@ -277,7 +310,7 @@ def submit_results(submission_url, results):
     except requests.exceptions.RequestException as e:
         print(f"[-] Error submitting results: {e}")
 
-if __name__ == '__main__':
+if __name__ == '__main__': #why am i using main lol i have NEVER used ts before i could jst delete it and the indentation but it would lowkey be funny if i kept it in
     payloads_to_test = load_payloads(PAYLOAD_FILE)
     if payloads_to_test:
         scan_reflected_xss(TARGET_URL, payloads_to_test)
@@ -290,3 +323,63 @@ if __name__ == '__main__':
             print("No vulnerabilities were detected.")
     else:
         print("Could not load payloads.")
+
+
+
+
+
+#TESTING CRYPTO
+
+
+
+
+
+SECRET_PATTERNS = [
+    r'api[_-]?key\s*=\s*["\'].*["\']',
+    r'password\s*=\s*["\'].*["\']',
+    r'secret\s*=\s*["\'].*["\']',
+    r'BEGIN PRIVATE KEY',
+    r'aws_access_key_id',
+]
+
+WEAK_CRYPTO_PATTERNS = [
+    r'md5\(', r'sha1\(', r'DES\(', r'RC4', r'AES\/ECB'
+    ]
+
+HARDCODED_KEY_PATTERNS = [r'key\s*=\s*["\'][A-Za-z0-9]{6,}["\']', r'iv\s*=\s*["\'][A-Za-z0-9]{6,}["\']',]
+
+#def shannon_entropy_or_some_shi_bro(string):
+#    prob = [float(string.count(c)) / len(string) for c in dict.fromkeys(list(string))]
+#    entropy = -sum([p * math.log(p) / math.log(2.0) for p in prob])
+#    return entropy
+#this stuff AINT WORK
+#def looks_like_secret(value):
+#    return shannon_entropy_or_some_shi_bro(value) > 3.5 and len(value) > 20
+
+
+def scan_content(content):
+    issues = []
+    lines = content.splitlines()
+    for i, line in enumerate(lines):
+        for pattern in SECRET_PATTERNS:
+            if re.search(pattern, line, re.IGNORECASE):
+                issues.append(("exposed a secret GASP", i+1, line.strip()))
+        for pattern in WEAK_CRYPTO_PATTERNS:
+            if re.search(pattern, line, re.IGNORECASE):
+                issues.append(("Old ass encryption", i+1, line.strip()))
+
+        for pattern in HARDCODED_KEY_PATTERNS:
+            if re.search(pattern, line, re.IGNORECASE):
+                issues.append(("Hardcode crypto lmaol", i+1, line.strip()))
+        strings = re.findall(r'["\'](.*?)["\']', line)
+
+        #for s in strings: LOL DOES NOT WORK
+        #   if looks_like_secret(s):
+        #       issues.append(("Possible secret", i+1, line.strip()))
+    status = "FAIL" if issues else "PASS"
+    return status, issues
+
+hi_lol=my_code_file_i_love_hu_tao
+status, issues = scan_content(hi_lol)
+print(status)
+#can use issues but not rn
