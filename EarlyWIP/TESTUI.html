@@ -19,23 +19,41 @@
   </div>
 
   <div style="position:relative; z-index:2; height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:16px;">
-    <h1 style="color:white; font-size:48px; margin:0; opacity:0; animation:fadeIn 0.5s 2.4s forwards;">T‎ ‎ ‎ ‎ ‎ R‎ ‎ ‎ ‎ ‎ I‎ ‎ ‎ ‎ ‎ L‎ ‎ ‎ ‎ ‎ U‎ ‎ ‎ ‎ ‎ N‎ ‎ ‎ ‎ ‎ A</h1>
+    <h1 style="color:white; font-size:48px; font-family: 'Azeret Mono', monospace; margin:0; opacity:0; padding:25px;animation:fadeIn 0.5s 2.4s forwards;">T ‎ ‎ R ‎ ‎ I ‎ ‎ L ‎ ‎ U ‎ ‎ N ‎ ‎ A</h1>
     <input
       type="text"
+      id="input"
       placeholder="Input git repo file URL..."
       style="
-        padding:12px 16px;
-        width:260px;
-        background:transparent;
-        border:transparent;
-        color:white;
-        font-size:16px;
-        outline:none;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: rgba(255, 255, 255, 0.7);
+        font-family: 'Azeret Mono', monospace;
+        font-size: 16px;
+        text-align: center;
+        letter-spacing: 1px;
+        width: 300px;
+        padding: 15px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        transition: border-color 0.3s ease;
         backdrop-filter:blur(6px);
         opacity:0;
-        animation:fadeIn 0.5s 2.6s forwards;
+        animation:fadeIn 0.5s 3.0s forwards;
       "
     />
+    <p id="output"></p>
+    <script> 
+      const inputElement = document.getElementById('input');
+      const outputElement = document.getElementById('output');
+
+      // Add an event listener for seeing if enter was pressed 
+      inputElement.addEventListener('keydown', function(event) {
+          // Check if the pressed key is enter and nothing else 
+          if (event.key === 'Enter') {
+            // IMPLEMENT THE BACKEND HERE
+          }
+    </script>
   </div>
 
   <style>
