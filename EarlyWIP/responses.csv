@@ -1,0 +1,8 @@
+Line Number, Code, Reasoning, Solution
+4, api_key="AIzaSyBfTeyoXqdKDTv-0S9auvehejBCMtrzaVQ" #ADD - ashleys code, Hardcoded sensitive Google API key detected. This exposes credentials to anyone with access to the source code or version control history., Use environment variables or Streamlit secrets to manage API keys securely.
+8, api_key="AIzaSyBfTeyoXqdKDTv-0S9auvehejBCMtrzaVQ" #ADD - ashleys code, Duplicate hardcoded sensitive API key detected which indicates poor credential management., Remove the hardcoded string and use a secure secret manager.
+27, "st.markdown(css, unsafe_allow_html=True)", Using unsafe_allow_html=True can lead to Cross-Site Scripting (XSS) if any variables within the CSS string are influenced by external or user-provided input., Avoid using the unsafe_allow_html flag or strictly sanitize all inputs before rendering them.
+47, "st.markdown(""<h1 style='text-align: center; color: white; font-family:monospace; padding: 67px'>t r i l u n a</h1>"", unsafe_allow_html=True)", Unnecessary use of unsafe_allow_html=True for static text increases the potential attack surface for XSS., Use standard Streamlit components like st.title or st.header to display text safely.
+49, github_link = st.text_input(, User input is accepted without validation or sanitization. This could lead to Server-Side Request Forgery or other injection attacks depending on how the backend processes the link., Implement strict validation and sanitization for the provided URL to ensure it is a valid and safe GitHub link before processing it.
+35.0
+1,0,1
