@@ -82,9 +82,6 @@ response = client.models.generate_content(
 
 print(response.text)
 
-with open('responses.csv', 'w') as f:
-    f.write(response.text)
-
 #TURN ON AT END
 
 
@@ -415,6 +412,8 @@ else:
     god_array[2]=0
 
 print(f"\n{god_array}\n")
-#can use issues but not rn
 
+with open('responses.csv', 'w') as f:
+    f.write(response.text)
+    f.write('\n' + ','.join(map(str, god_array)))
 
