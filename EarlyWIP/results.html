@@ -1,51 +1,224 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Results</title>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <style>
-    body { background: black; color: white; padding: 20px; font-family: Arial; }
-    table { border-collapse: collapse; width: 100%; border: 2px solid rgba(255,255,255,0.3); border-radius: 16px; overflow: hidden; }
-    th, td { padding: 10px; text-align: left; }
-    th { background: rgba(50,50,50,0.7); font-weight: bold; }
-    tr:hover { background: rgba(100,100,100,0.3); }
-    #error { color: red; padding: 10px; }
-  </style>
 </head>
-<body>
-  <table id="csvTable"></table>
-  <div id="error"></div>
+
+<body style="margin:0; background:black; font-family:Arial, sans-serif; color:white; overflow-x:hidden;">
+
+  <div style="position:fixed; inset:0; z-index:0;">
+    <img src="/assets/base0.jpg"
+      style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0.7;" />
+  </div>
+
+  <div id="shooting-stars-container" style="position:fixed; inset:0; z-index:1; pointer-events:none;"></div>
+
+  <div
+    style="position:relative; z-index:2; min-height:100vh; padding: 40px; box-sizing: border-box; display:flex; flex-direction:column; align-items:center;">
+    <h1 style="color:white; font-size:48px; margin-bottom:20px; text-shadow: 0 0 10px rgba(173, 194, 255, 0.8);">
+      Analysis Results</h1>
+
+    <div id="stats-container"
+      style="display:flex; gap:20px; width:100%; max-width:1200px; margin-bottom:20px; justify-content: space-between;">
+      <div id="score-card"
+        style="flex:1; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); padding:20px; border-radius:12px; border: 1px solid rgba(173, 194, 255, 0.3); text-align:center;">
+        <h2 style="margin:0; font-size:24px; color:#adc2ff;">Security Score</h2>
+        <div id="score-display" style="font-size:48px; font-weight:bold; margin-top:10px;">--</div>
+      </div>
+      <div id="tests-card"
+        style="flex:2; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); padding:20px; border-radius:12px; border: 1px solid rgba(173, 194, 255, 0.3);">
+        <h2 style="margin:0; font-size:24px; color:#adc2ff; margin-bottom:10px;">Vulnerability Tests</h2>
+        <div style="display:flex; justify-content:space-around; align-items:center; height:60px;">
+          <div class="test-item" id="test-crypto">Crypto: <span class="status">--</span></div>
+          <div class="test-item" id="test-xss">XSS: <span class="status">--</span></div>
+          <div class="test-item" id="test-sqli">SQLi: <span class="status">--</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="results-container"
+      style="width: 100%; max-width: 1200px; backdrop-filter: blur(10px); background: rgba(0, 0, 0, 0.5); border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+      <table id="results-table" style="width:100%; border-collapse: collapse; text-align: left;">
+        <thead>
+          <tr style="border-bottom: 2px solid rgba(173, 194, 255, 0.5);">
+            <th style="padding: 15px; color: #adc2ff; font-size: 18px;">Line</th>
+            <th style="padding: 15px; color: #adc2ff; font-size: 18px;">Code/Issue</th>
+            <th style="padding: 15px; color: #adc2ff; font-size: 18px;">Reasoning</th>
+            <th style="padding: 15px; color: #adc2ff; font-size: 18px;">Solution</th>
+          </tr>
+        </thead>
+        <tbody id="results-body">
+          <!-- Rows will be injected here -->
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <style>
+    .shooting-star {
+      position: absolute;
+      pointer-events: none;
+    }
+
+    td {
+      padding: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      vertical-align: top;
+    }
+
+    tr:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .test-item {
+      font-size: 18px;
+    }
+
+    .status {
+      font-weight: bold;
+      margin-left: 5px;
+    }
+
+    .status-pass {
+      color: #00ff00;
+      text-shadow: 0 0 5px #00ff00;
+    }
+
+    .status-fail {
+      color: #ff0000;
+      text-shadow: 0 0 5px #ff0000;
+    }
+  </style>
 
   <script>
-    fetch('/Users/adviks/Documents/pythonCode/Oakfest26-IDFT33/EarlyWIP/responses.csv')
-      .then(r => {
-        if (!r.ok) throw new Error('CSV file not found');
-        return r.text();
-      })
-      .then(data => {
-        Papa.parse(data, {
-          complete: (results) => {
-            const rows = results.data.filter(r => r.some(c => c.trim()));
-            const table = document.getElementById('csvTable');
-            rows.slice(0, rows.length - 2).forEach((row, index) => {
-              const tr = document.createElement('tr');
-              row.forEach(cell => {
-                const tag = index === 0 ? 'th' : 'td';
-                const el = document.createElement(tag);
-                el.textContent = cell.trim();
-                tr.appendChild(el);
-              });
-              table.appendChild(tr);
-            });
-          }
+    (function () {
+      // Shooting stars logic (reusing implementation)
+      function createShootingStar() {
+        const container = document.getElementById('shooting-stars-container');
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', window.innerWidth);
+        svg.setAttribute('height', window.innerHeight);
+        svg.setAttribute('style', 'position:absolute; top:0; left:0;');
+        svg.classList.add('shooting-star');
+        const startX = Math.random() * window.innerWidth;
+        const startY = Math.random() * (window.innerHeight / 2);
+        const angle = 45;
+        const length = Math.random() * 100 + 80;
+        const endX = startX + length * Math.cos((angle * Math.PI) / 180);
+        const endY = startY + length * Math.sin((angle * Math.PI) / 180);
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', startX);
+        line.setAttribute('y1', startY);
+        line.setAttribute('x2', endX);
+        line.setAttribute('y2', endY);
+        line.setAttribute('stroke', 'rgba(173, 194, 255, 0.8)');
+        line.setAttribute('stroke-width', '2');
+        line.setAttribute('stroke-linecap', 'round');
+        line.setAttribute('filter', 'drop-shadow(0 0 3px rgba(173, 194, 255, 0.6))');
+        svg.appendChild(line);
+        container.appendChild(svg);
+        const duration = 500;
+        const speedMultiplier = 1.5;
+        const finalX = (endX - startX) * speedMultiplier;
+        const finalY = (endY - startY) * speedMultiplier;
+        svg.style.willChange = 'transform, opacity';
+        svg.style.transition = 'transform ' + duration + 'ms cubic-bezier(0.22,0.9,0.35,1), opacity ' + duration + 'ms linear';
+        requestAnimationFrame(function () {
+          svg.style.transform = 'translate(' + finalX + 'px, ' + finalY + 'px)';
+          svg.style.opacity = '0';
         });
+        setTimeout(function () { svg.remove(); }, duration + 50);
+      }
+      function spawnShootingStars() {
+        setInterval(function () { if (Math.random() > 0.3) { createShootingStar(); } }, 200);
+      }
+      spawnShootingStars();
+    })();
+
+    // Fetch and render results
+    fetch('/api/get_results')
+      .then(response => response.json())
+      .then(data => {
+        // Render Score
+        const scoreDisplay = document.getElementById('score-display');
+        if (data.score !== null && data.score !== undefined) {
+          scoreDisplay.textContent = data.score;
+          // Color code the score
+          if (data.score >= 80) scoreDisplay.style.color = "#00ff00";
+          else if (data.score >= 50) scoreDisplay.style.color = "#ffff00";
+          else scoreDisplay.style.color = "#ff0000";
+        } else {
+          scoreDisplay.textContent = "N/A";
+        }
+
+        // Render Tests
+        const updateTest = (id, failed) => {
+          const el = document.getElementById(id).querySelector('.status');
+          if (failed === true) {
+            el.textContent = "FAIL";
+            el.className = "status status-fail";
+          } else if (failed === false) {
+            el.textContent = "PASS";
+            el.className = "status status-pass";
+          } else {
+            el.textContent = "N/A";
+          }
+        };
+
+        // Data format: { crypto: bool, xss: bool, sqli: bool } where True means FAIL (1)?
+        // Wait, user said "1 is a fail and 0 is a pass".
+        // In Python: bool(1) is True, bool(0) is False.
+        // So True = Fail, False = Pass.
+
+        if (data.tests) {
+          updateTest('test-crypto', data.tests.crypto); // crypto is 1st value
+          updateTest('test-xss', data.tests.xss);       // xss is 2nd value
+          updateTest('test-sqli', data.tests.sqli);     // sqli is 3rd value
+        }
+
+
+        const tbody = document.getElementById('results-body');
+        if (data.results && data.results.length > 0) {
+          data.results.forEach(row => {
+            const tr = document.createElement('tr');
+            const createCell = (text) => {
+              const td = document.createElement('td');
+              td.textContent = text || '';
+              return td;
+            };
+            if (row.length >= 1) tr.appendChild(createCell(row[0]));
+            else tr.appendChild(createCell(''));
+
+            if (row.length >= 2) tr.appendChild(createCell(row[1]));
+            else tr.appendChild(createCell(''));
+
+            if (row.length >= 3) tr.appendChild(createCell(row[2]));
+            else tr.appendChild(createCell(''));
+
+            if (row.length >= 4) tr.appendChild(createCell(row[3]));
+            else tr.appendChild(createCell(''));
+
+            tbody.appendChild(tr);
+          });
+        } else {
+          const tr = document.createElement('tr');
+          const td = document.createElement('td');
+          td.colSpan = 4;
+          td.textContent = "No results found or data is empty.";
+          td.style.textAlign = "center";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+        }
       })
-      .catch(e => {
-        document.getElementById('error').textContent = 'Error loading CSV: ' + e.message;
-        console.error(e);
+      .catch(err => {
+        console.error('Error fetching results:', err);
       });
   </script>
+
 </body>
+
 </html>
