@@ -1,7 +1,11 @@
 import streamlit as st
 import pandas as pd 
+
+api_key="AIzaSyBfTeyoXqdKDTv-0S9auvehejBCMtrzaVQ" #ADD - ashleys code
+
 import streamlit.components.v1 as components
 
+api_key="AIzaSyBfTeyoXqdKDTv-0S9auvehejBCMtrzaVQ" #ADD - ashleys code
 
 bg_url = "https://hitecher.com/storage/img/20190423/583ade3bcb4d91df0177.jpg"  
 css = f"""
