@@ -20,16 +20,10 @@ import sys
 load_dotenv()
 ###edge
 
-
-
-
+with open('inputs.txt', 'r') as f:
+    hubstring = f.read().strip()
 
 #TESTING GEMINI
-
-
-
-
-hubstring = str(input("Paste a valid Github URL: "))
 
 def github_read_file(username, repository_name, file_path, github_token=None):
     headers = {}
@@ -416,4 +410,3 @@ print(f"\n{god_array}\n")
 with open('responses.csv', 'w') as f:
     f.write(response.text)
     f.write('\n' + ','.join(map(str, god_array)))
-
