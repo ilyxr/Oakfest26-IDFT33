@@ -34,6 +34,12 @@ def save_input():
         data = request.json
         url = data.get('url', '').strip()
         if url:
+            if os.path.exists('responses.csv'):
+                try:
+                    os.remove('responses.csv')
+                except Exception:
+                    pass # handle potential file lock issues silently or log them
+            
             with open('inputs.txt', 'w') as f:
                 f.write(url)
             return jsonify({'status': 'success'}), 200
@@ -52,6 +58,94 @@ def processing():
 @app.route('/assets/<path:filename>')
 def serve_assets(filename):
     return send_from_directory('TRILUNA_ASSETS', filename)
+
+@app.route('/results.html')
+def results():
+    return send_from_directory('.', 'results.html')
+
+@app.route('/api/check_status')
+def check_status():
+    if os.path.exists('responses.csv') and os.path.getsize('responses.csv') > 0:
+        return jsonify({'status': 'ready'})
+    return jsonify({'status': 'processing'})
+
+@app.route('/api/get_results')
+def get_results():
+    try:
+        if not os.path.exists('responses.csv'):
+            return jsonify({'error': 'Results not found'}), 404
+        
+        with open('responses.csv', 'r') as f:
+            lines = f.readlines()
+        
+        # Remove empty lines
+        lines = [line.strip() for line in lines if line.strip()]
+        
+        score = None
+        tests = None
+        
+        # New logic:
+        # Last row: Booleans (Crypto, XSS, SQLi)
+        # Second last row: Security Score
+        # Rest (lines 0 to N-3?): content
+        # Note: Previous logic discarded line 0 (status 1,1,1). We should check if line 0 is still relevant if we change writing order.
+        # Let's assume we change writing order to:
+        # 1. response.text (which has findings + score at the end)
+        # 2. god_array (booleans)
+        
+        # If response.text ends with score, then:
+        # Line N: Booleans
+        # Line N-1: Score
+        # Lines 0..N-2: Findings
+        
+        if len(lines) >= 2:
+            try:
+                # Parse booleans from last line
+                last_line = lines[-1]
+                # Assuming format: 1,0,1 or [1, 0, 1] - likely comma separated based on previous code
+                # Cleaning brackets if possibly present
+                last_line_clean = last_line.strip('[]')
+                bools = [int(x.strip()) for x in last_line_clean.split(',')]
+                tests = {
+                    "crypto": bool(bools[0]),
+                    "xss": bool(bools[1]), 
+                    "sqli": bool(bools[2])
+                }
+            except:
+                tests = None # Fail gracefully
+
+            try:
+                # Parse score from second to last line
+                score_line = lines[-2]
+                score = float(score_line)
+            except:
+                score = None # Fail gracefully
+            
+            # Content is everything before second to last line
+            content_lines = lines[:-2]
+        else:
+            content_lines = []
+
+        import csv
+        import io
+        
+        results_data = []
+        if content_lines:
+            csv_content = "\n".join(content_lines)
+            reader = csv.reader(io.StringIO(csv_content))
+            for row in reader:
+                 if hasattr(row, '__iter__') and len(row) > 0:
+                     results_data.append(row)
+
+        return jsonify({
+            'results': results_data, 
+            'score': score, 
+            'tests': tests
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 
 def run_flask():
     app.run(port=5000, debug=False, use_reloader=False, host='0.0.0.0')
@@ -460,8 +554,10 @@ if my_code_file_i_love_hu_tao:
 
     if response:
         with open('responses.csv', 'w') as f:
-            f.write(','.join(map(str, god_array)) + '\n')
-            f.write(response.text)
+            # Write response text first (Findings + Score at end)
+            f.write(response.text.strip() + '\n')
+            # Write god_array (Booleans) at the very end
+            f.write(','.join(map(str, god_array)))
 
 try:
     while True:
