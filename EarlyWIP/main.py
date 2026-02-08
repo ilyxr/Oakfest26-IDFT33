@@ -38,7 +38,7 @@ def save_input():
                 try:
                     os.remove('responses.csv')
                 except Exception:
-                    pass # handle potential file lock issues silently or log them
+                    pass
             
             with open('inputs.txt', 'w') as f:
                 f.write(url)
@@ -77,33 +77,17 @@ def get_results():
         
         with open('responses.csv', 'r') as f:
             lines = f.readlines()
-        
-        # Remove empty lines
+
         lines = [line.strip() for line in lines if line.strip()]
         
         score = None
         tests = None
         
-        # New logic:
-        # Last row: Booleans (Crypto, XSS, SQLi)
-        # Second last row: Security Score
-        # Rest (lines 0 to N-3?): content
-        # Note: Previous logic discarded line 0 (status 1,1,1). We should check if line 0 is still relevant if we change writing order.
-        # Let's assume we change writing order to:
-        # 1. response.text (which has findings + score at the end)
-        # 2. god_array (booleans)
-        
-        # If response.text ends with score, then:
-        # Line N: Booleans
-        # Line N-1: Score
-        # Lines 0..N-2: Findings
-        
         if len(lines) >= 2:
             try:
-                # Parse booleans from last line
+
                 last_line = lines[-1]
-                # Assuming format: 1,0,1 or [1, 0, 1] - likely comma separated based on previous code
-                # Cleaning brackets if possibly present
+
                 last_line_clean = last_line.strip('[]')
                 bools = [int(x.strip()) for x in last_line_clean.split(',')]
                 tests = {
@@ -112,16 +96,15 @@ def get_results():
                     "sqli": bool(bools[2])
                 }
             except:
-                tests = None # Fail gracefully
+                tests = None 
 
             try:
-                # Parse score from second to last line
+
                 score_line = lines[-2]
                 score = float(score_line)
             except:
                 score = None # Fail gracefully
             
-            # Content is everything before second to last line
             content_lines = lines[:-2]
         else:
             content_lines = []
@@ -144,8 +127,6 @@ def get_results():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-
 
 def run_flask():
     app.run(port=5000, debug=False, use_reloader=False, host='0.0.0.0')
@@ -565,3 +546,4 @@ try:
 except KeyboardInterrupt:
     print("\nServer stopped")
     sys.exit(0)
+
