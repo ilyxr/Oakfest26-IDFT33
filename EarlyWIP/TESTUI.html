@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,7 +9,7 @@
 <body style="margin:0; background:black; overflow:hidden; font-family:Arial, sans-serif;">
 
   <div style="position:fixed; inset:0;">
-    <img src="C:\Users\Ashmit\Desktop\codefest 26\TRILUNA_ASSETS\base0.jpg" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; animation:fade1 0.2s 0.2s forwards;" />
+    <img src="/assets/base0.jpg" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; animation:fade1 0.2s 0.2s forwards;" />
   </div>
 
   <div id="shooting-stars-container" style="position:fixed; inset:0; z-index:1; pointer-events:none;"></div>
@@ -24,6 +25,7 @@
       <span class="triluna-letter">A</span>
     </h1>
     <input
+      id="github-input"
       type="text"
       placeholder="Input git repo file URL..."
       style="
@@ -40,6 +42,24 @@
         animation:fadeIn 0.5s 2.6s forwards;
       "
     />
+    <button
+      id="submit-btn"
+      style="
+        text-align: center;
+        padding:8px 16px;
+        width:100px;
+        background:rgba(255,255,255,0.1);
+        border:1px solid rgba(173, 194, 255, 0.5);
+        color:white;
+        font-size:14px;
+        cursor:pointer;
+        outline:none;
+        backdrop-filter:blur(6px);
+        opacity:0;
+        animation:fadeIn 0.5s 2.7s forwards;
+        margin-top:8px;
+      "
+    >Submit</button>
   </div>
 
   <style>
@@ -184,6 +204,29 @@
       }
       spawnShootingStars();
     })();
+    document.getElementById('submit-btn').addEventListener('click', function(){
+      const input = document.getElementById('github-input').value.trim();
+      if(input){
+        console.log('Sending request with URL:', input);
+        fetch('http://localhost:5000/save-input', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({url: input})
+        }).then(response => {
+          console.log('Response status:', response.status);
+          if(response.ok){
+            console.log('Success, redirecting...');
+            window.location.href = 'http://localhost:5000/processing.html';
+          } else {
+            console.error('Response not ok:', response.status);
+          }
+        }).catch(error => {
+          console.error('Fetch error:', error);
+        });
+      } else {
+        console.log('Input is empty');
+      }
+    });
   </script>
 
 </body>
