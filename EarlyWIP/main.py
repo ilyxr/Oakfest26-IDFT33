@@ -15,10 +15,50 @@ from urllib.parse import urljoin, urlparse, parse_qs
 from dotenv import load_dotenv
 import math
 import re
-import sys 
+import sys
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
+from threading import Thread
 
 load_dotenv()
 ###edge
+
+app = Flask(__name__)
+CORS(app)
+
+@app.route('/save-input', methods=['POST', 'OPTIONS'])
+def save_input():
+    if request.method == 'OPTIONS':
+        return '', 204
+    try:
+        data = request.json
+        url = data.get('url', '').strip()
+        if url:
+            with open('inputs.txt', 'w') as f:
+                f.write(url)
+            return jsonify({'status': 'success'}), 200
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 400
+    return jsonify({'status': 'error'}), 400
+
+@app.route('/')
+def index():
+    return send_from_directory('.', 'TESTUI.html')
+
+@app.route('/processing.html')
+def processing():
+    return send_from_directory('.', 'processing.html')
+
+@app.route('/assets/<path:filename>')
+def serve_assets(filename):
+    return send_from_directory('TRILUNA_ASSETS', filename)
+
+def run_flask():
+    app.run(port=5000, debug=False, use_reloader=False, host='0.0.0.0')
+
+flask_thread = Thread(target=run_flask, daemon=False)
+flask_thread.start()
+print("Flask server starting on http://localhost:5000")
 
 with open('inputs.txt', 'r') as f:
     hubstring = f.read().strip()
@@ -59,22 +99,32 @@ def hubrunner():
     #dont need this rn
     return data
 
-my_code_file_i_love_hu_tao = hubrunner()
+my_code_file_i_love_hu_tao = None
+
+try:
+    with open('inputs.txt', 'r') as f:
+        content = f.read().strip()
+        if content:
+            my_code_file_i_love_hu_tao = hubrunner()
+except Exception as e:
+    print(f"No valid inputs.txt yet: {e}")
 
 ###
 #TEMPORARY PROMPT
-prompt = "You are an expert cybersecurity analyst tasked with detecting weaknesses in codebases. You are to be given a code file where you must detect all the flaws. These flaws include leaked secrets like .env files or keys, vulnerable literal string interpretation, injection vulnerabilities, path traversal vulnerabilities, XSS security failures, deserialization vulnerabilities, symmetric encryption, outdated encryption algorithms, open ports, not using https or tls, sending sensitive data in query strings, typosquatting and outdated packages, Insecure Direct Object Reference, etc. This is no means a comprehensive list, but look out for them. This is the code to review: " + my_code_file_i_love_hu_tao + "  Once you have reviewed this, you are to report on it in a structured manner. Respond in a CSV format with each row having one error, represented by its line number which MUST be an integer, the  in the line word for word, and the reasoning and then solution. I also want a new last row to just to have your overall security score of this. This should be a number from 1-100 and ONLY a float. Do NOT use commas in your text responses. Dummy example row: 45, clientkey=totallymyclientkey9873824873849832848947432793248, The key is exposed and hardcoded and could be stolen., Use an environment file. Dummy example last row: 88"
 
 api_key1 = os.getenv("GOOGLE_API_KEY")
-
 client = genai.Client(api_key=api_key1)
+response = None
 
-response = client.models.generate_content(
-    model="gemini-3-flash-preview",
-    contents=prompt
-)
-
-print(response.text)
+if my_code_file_i_love_hu_tao:
+    prompt = "You are an expert cybersecurity analyst tasked with detecting weaknesses in codebases. You are to be given a code file where you must detect all the flaws. These flaws include leaked secrets like .env files or keys, vulnerable literal string interpretation, injection vulnerabilities, path traversal vulnerabilities, XSS security failures, deserialization vulnerabilities, symmetric encryption, outdated encryption algorithms, open ports, not using https or tls, sending sensitive data in query strings, typosquatting and outdated packages, Insecure Direct Object Reference, etc. This is no means a comprehensive list, but look out for them. This is the code to review: " + my_code_file_i_love_hu_tao + "  Once you have reviewed this, you are to report on it in a structured manner. Respond in a CSV format with each row having one error, represented by its line number which MUST be an integer, the  in the line word for word, and the reasoning and then solution. I also want a new last row to just to have your overall security score of this. This should be a number from 1-100 and ONLY a float. Do NOT use commas in your text responses. Dummy example row: 45, clientkey=totallymyclientkey9873824873849832848947432793248, The key is exposed and hardcoded and could be stolen., Use an environment file. Dummy example last row: 88"
+    
+    response = client.models.generate_content(
+        model="gemini-3-flash-preview",
+        contents=prompt
+    )
+    
+    print(response.text)
 
 #TURN ON AT END
 
@@ -381,32 +431,41 @@ def scan_content(content):
     return status, issues
 
 hi_lol=my_code_file_i_love_hu_tao
-status, issues = scan_content(hi_lol)
-print(status)
-#can use issues but not rn
+status = None
+issues = None
+god_array = [0, 0, 0]
+tempvar = 0
+myothertempvar = 0
 
-#to create a god array
-#ahhahahahhahahhahahahhahahahahahha
+if my_code_file_i_love_hu_tao:
+    status, issues = scan_content(hi_lol)
+    print(status)
+    
+    if status=="FAIL":
+        god_array[0]=1
+    else:
+        god_array[0]=0
 
-god_array=[0, 0, 0]
-#1 is Crypto, 2 is XSS, 3 is SQL. Handle Gemeni seperately. 1 is compromised, 0 is safe.
-if status=="FAIL":
-    god_array[0]=1
-else:
-    god_array[0]=0
+    if tempvar!=1:
+        god_array[1]=1
+    else:
+        god_array[1]=0
 
-if tempvar!=1:
-    god_array[1]=1
-else:
-    god_array[1]=0
+    if myothertempvar!=1:
+        god_array[2]=1
+    else:
+        god_array[2]=0
 
-if myothertempvar!=1:
-    god_array[2]=1
-else:
-    god_array[2]=0
+    print(f"\n{god_array}\n")
 
-print(f"\n{god_array}\n")
+    if response:
+        with open('responses.csv', 'w') as f:
+            f.write(','.join(map(str, god_array)) + '\n')
+            f.write(response.text)
 
-with open('responses.csv', 'w') as f:
-    f.write(response.text)
-    f.write('\n' + ','.join(map(str, god_array)))
+try:
+    while True:
+        time.sleep(1)
+except KeyboardInterrupt:
+    print("\nServer stopped")
+    sys.exit(0)
