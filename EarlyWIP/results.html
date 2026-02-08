@@ -96,7 +96,7 @@
 
   <script>
     (function () {
-      // Shooting stars logic (reusing implementation)
+      // hey wsg
       function createShootingStar() {
         const container = document.getElementById('shooting-stars-container');
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -139,15 +139,14 @@
       spawnShootingStars();
     })();
 
-    // Fetch and render results
+    // Fetch and render results or smth
     fetch('/api/get_results')
       .then(response => response.json())
       .then(data => {
-        // Render Score
+        // Render Score!!
         const scoreDisplay = document.getElementById('score-display');
         if (data.score !== null && data.score !== undefined) {
           scoreDisplay.textContent = data.score;
-          // Color code the score
           if (data.score >= 80) scoreDisplay.style.color = "#00ff00";
           else if (data.score >= 50) scoreDisplay.style.color = "#ffff00";
           else scoreDisplay.style.color = "#ff0000";
@@ -155,7 +154,7 @@
           scoreDisplay.textContent = "N/A";
         }
 
-        // Render Tests
+        // twat rebdef
         const updateTest = (id, failed) => {
           const el = document.getElementById(id).querySelector('.status');
           if (failed === true) {
@@ -169,15 +168,10 @@
           }
         };
 
-        // Data format: { crypto: bool, xss: bool, sqli: bool } where True means FAIL (1)?
-        // Wait, user said "1 is a fail and 0 is a pass".
-        // In Python: bool(1) is True, bool(0) is False.
-        // So True = Fail, False = Pass.
-
         if (data.tests) {
           updateTest('test-crypto', data.tests.crypto); // crypto is 1st value
           updateTest('test-xss', data.tests.xss);       // xss is 2nd value
-          updateTest('test-sqli', data.tests.sqli);     // sqli is 3rd value
+          updateTest('test-sqli', data.tests.sqli);     // sqli is 3rd value fyi
         }
 
 
